@@ -6,7 +6,6 @@
 #include <string.h>
 
 #define BUF_SIZE 256
-#define ASCII0 48
 
 int main(int argc, char **argv){
 	char *opts = "t:";
@@ -39,21 +38,33 @@ int main(int argc, char **argv){
 		len += chunk_len;
 	}
 
-	//записываем данные в массив
+	int i = 0, j = 0, k = 0;
 	size_t arr_size = len / 2;
-	int *arr = calloc(arr_size, sizeof(int));
-	int j = 0;
-	for (int i = 0; i < (int)arr_size; i += 2){
-		arr[j] = input[i] - ASCII0;
-		j += 1;
-	}
+	int *arr = malloc(arr_size * sizeof(int));
+	char temp_buf[32];
+	char c;
+	while ((c = input[i++]) != '\n' && c != '\0'){
+		if (c != ' '){
+			temp_buf[k++] = c;
+		}
+		else {
+			if (k > 0){
+				temp_buf[k] = '\0';
+				arr[j++] = atoi(temp_buf);
+				k = 0;
+			}
+		}
+	} 
+	if (k > 0){
+		temp_buf[k] = '\0';
+		arr[j++] = atoi(temp_buf);
+	}	
 	
-	//printf("%s%lu\n", input, len);
-	/*for (int i = 0; i < (int)len/2; i++){
-		printf("%d ", arr[i]);
-	}
-	printf("\n");*/
-
+	arr_size = j;
+	int *temp_arr = realloc(arr, arr_size * sizeof(int));
+	//проверка
+	arr = temp_arr;
+	
 	parallel_divide(thread_num, &arr, arr_size);
 
 	for (int i = 0; i < (int)arr_size; i++){
