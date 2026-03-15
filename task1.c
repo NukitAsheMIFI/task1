@@ -11,14 +11,31 @@ int parallel_divide(int thread_num, int **arr, int arr_size){
 		thread_num = arr_size;	
 	} 
 	int chunk_size = arr_size / thread_num;
+	int remainder = arr_size % thread_num;
 	pthread_t *threads = malloc(thread_num * sizeof(pthread_t));
-	Arr *chunk_arrays = malloc(thread_num * sizeof(Arr));
+	if (threads == NULL){
+		perror("threads allocation error");
+		return 1;
+	}
+	
+	Arr *chunk_arrays = malloc(thread_num * sizeof(Arr));	
+	if (threads == NULL){
+		perror("chunk_arrays allocation error");
+		free(threads);
+		return 1;
+	}
+	
+	int cur_start = 0;
 	for (int i = 0; i < thread_num; ++i) {
+		int cur_chunk_size = chunk_size + (i < remainder ? 1 : 0); //распределяем остаток на процессоры, чей номер меньше остатка.
 		chunk_arrays[i].arr = *arr;
-		chunk_arrays[i].start = i * chunk_size;
-		chunk_arrays[i].end = (i == thread_num - 1) ? arr_size - 1 : chunk_arrays[i].start + chunk_size - 1;
+		chunk_arrays[i].start = cur_start;  
+		chunk_arrays[i].end = cur_start + cur_chunk_size - 1; //тернарный оператор больше не нужен.
+		cur_start += cur_chunk_size;
 		if (pthread_create(&threads[i], NULL, sort, &chunk_arrays[i]) != 0){
 			perror("pthread_create error");
+			free(threads);
+			free(chunk_arrays);
 			return 1;
 		}
 	}
@@ -26,6 +43,14 @@ int parallel_divide(int thread_num, int **arr, int arr_size){
 	for (int i = 0; i < thread_num; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
+	int *temp_arr = malloc(arr_size * sizeof(int)); //temp_arr вместо left_arr и right_arr.
+	if (temp_arr == NULL){
+		perror("temp_arr allocation error");
+		free(threads);
+		free(chunk_arrays);
+		return 1;
+	}	
 	
 	int step = chunk_size;
 	while (step < arr_size) {
@@ -33,10 +58,11 @@ int parallel_divide(int thread_num, int **arr, int arr_size){
 			int left = i;
 			int mid = i + step - 1;
 			int right = min(i + 2 * step - 1, arr_size - 1);
-			merge(arr, left, mid, right); 
+			merge(arr, temp_arr, left, mid, right); 
 		}
 		step *= 2;
 	}
+	free(temp_arr);
 	free(threads);
 	free(chunk_arrays);
 	return 0;
@@ -56,47 +82,28 @@ int compare_func(const void* arg1, const void* arg2){
 	return a - b;
 }
 
-int merge(int **arr, int left, int mid, int right){
-	int i, j, k;
-	int len1 = mid - left + 1;
-	int len2 = right - mid;
-	int *left_array = (int*)malloc(len1 * sizeof(int));
-	int *right_array = (int*)malloc(len2 * sizeof(int));
-	for(i = 0; i < len1; ++i){
-		left_array[i] = (*arr)[left+i];
-	}
-	for(j = 0; j < len2; ++j){
-		right_array[j] = (*arr)[mid + j + 1];
-	}
-	
-	i = 0; 
-	j = 0;
-	k = left;
-	while(i < len1 && j < len2){
-		if (left_array[i] < right_array[j]){
-			(*arr)[k] = left_array[i];
-			++i;
+void merge(int **arr, int *temp_arr, int left, int mid, int right){
+	int i = left;
+	int j = mid + 1;
+	int k = left;
+	while (i <= mid && j <= right){
+		if ((*arr)[i] < (*arr)[j]){
+			temp_arr[k++] = (*arr)[i++]; //код укорочен за счет (*arr)[i++]
 		}
-		else{
-			(*arr)[k] = right_array[j];
-			++j;
+		else {
+			temp_arr[k++] = (*arr)[j++];
 		}
-		++k;
 	}
 	
-	while(i < len1){
-		(*arr)[k] = left_array[i];
-		++i;
-		++k;
+	while(i <= mid){
+		temp_arr[k++] = (*arr)[i++];
 	}
 	
-	while(j < len2){
-		(*arr)[k] = right_array[j];
-		++j;
-		++k;
+	while(j < right){
+		temp_arr[k++] = (*arr)[j++];
 	}
-	
-	free(left_array);
-	free(right_array);
-	return 0;
+
+	for (int i = left; i <= right; i++){
+		(*arr)[i] = temp_arr[i];
+	}
 }

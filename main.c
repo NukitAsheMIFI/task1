@@ -55,9 +55,13 @@ int main(int argc, char **argv){
 	printf("\n");*/
 
 	parallel_divide(thread_num, &arr, arr_size);
+
+	for (int i = 0; i < (int)arr_size; i++){
+		printf("%d ", arr[i]);
+	}
+	printf("\n");
 	
 	free(arr);
 	free(input);
 	return 0;
-		
 }
