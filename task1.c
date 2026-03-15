@@ -14,13 +14,13 @@ int parallel_divide(int thread_num, int **arr, int arr_size){
 	int remainder = arr_size % thread_num;
 	pthread_t *threads = malloc(thread_num * sizeof(pthread_t));
 	if (threads == NULL){
-		perror("threads allocation error");
+		perror("memory allocation error");
 		return 1;
 	}
 	
 	Arr *chunk_arrays = malloc(thread_num * sizeof(Arr));	
-	if (threads == NULL){
-		perror("chunk_arrays allocation error");
+	if (chunk_arrays == NULL){
+		perror("memory allocation error");
 		free(threads);
 		return 1;
 	}
@@ -46,7 +46,7 @@ int parallel_divide(int thread_num, int **arr, int arr_size){
 
 	int *temp_arr = malloc(arr_size * sizeof(int)); //temp_arr вместо left_arr и right_arr.
 	if (temp_arr == NULL){
-		perror("temp_arr allocation error");
+		perror("memory allocation error");
 		free(threads);
 		free(chunk_arrays);
 		return 1;
@@ -99,7 +99,7 @@ void merge(int **arr, int *temp_arr, int left, int mid, int right){
 		temp_arr[k++] = (*arr)[i++];
 	}
 	
-	while(j < right){
+	while(j <= right){
 		temp_arr[k++] = (*arr)[j++];
 	}
 

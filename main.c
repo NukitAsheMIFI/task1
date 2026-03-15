@@ -17,18 +17,18 @@ int main(int argc, char **argv){
 
 	//считываем введенные в командную строку числа
 	size_t len = 0;
-	char *input = calloc(len, sizeof(char));
+	char *input = malloc(1 * sizeof(char));
 	if (input == NULL){
-		perror("calloc error");
+		perror("memory allocation error");
 		return 1;
 	} 	
-	
+	input[0] = '\0';
 	char buf[BUF_SIZE];
 	while (fgets(buf, BUF_SIZE, stdin) != NULL){
 		size_t chunk_len = strlen(buf);
-		char *temp_input = realloc(input, len + chunk_len);
+		char *temp_input = realloc(input, len + chunk_len + 1);
 		if (temp_input == NULL){
-			perror("realloc error");
+			perror("memory allocation error");
 			free(input);
 			return 1;
 		} 
@@ -38,23 +38,26 @@ int main(int argc, char **argv){
 	}
 
 	int j = 0;
-	size_t arr_size = len / 2;
-	int *arr = malloc(arr_size * sizeof(int));;
+	size_t arr_size = len;
+	int *arr = malloc(arr_size * sizeof(int));
     char *token = strtok(input, " ");
     while (token != NULL){
     	arr[j++] = atoi(token);
     	token = strtok(NULL, " ");
     }
-	
+	free(input);
 	arr_size = j;
 	int *temp_arr = realloc(arr, arr_size * sizeof(int));
 	if (temp_arr == NULL){
-		perror("allocation memory error");
+		perror("memory allocation error");
 		return 1;
 	}
 	arr = temp_arr;
 	
-	parallel_divide(thread_num, &arr, arr_size);
+	if (parallel_divide(thread_num, &arr, arr_size) != 0) {
+		free(arr);
+		return 0;	
+	}
 
 	for (int i = 0; i < (int)arr_size; i++){
 		printf("%d ", arr[i]);
@@ -62,6 +65,5 @@ int main(int argc, char **argv){
 	printf("\n");
 	
 	free(arr);
-	free(input);
 	return 0;
 }
