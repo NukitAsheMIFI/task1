@@ -15,7 +15,6 @@ int main(int argc, char **argv){
 		thread_num = atoi(optarg); // считывание количества потоков из командной строки
 	}	
 
-	//printf("%d\n", thread_num);
 	//считываем введенные в командную строку числа
 	size_t len = 0;
 	char *input = calloc(len, sizeof(char));
@@ -38,31 +37,21 @@ int main(int argc, char **argv){
 		len += chunk_len;
 	}
 
-	int i = 0, j = 0, k = 0;
+	int j = 0;
 	size_t arr_size = len / 2;
-	int *arr = malloc(arr_size * sizeof(int));
-	char temp_buf[32];
-	char c;
-	while ((c = input[i++]) != '\n' && c != '\0'){
-		if (c != ' '){
-			temp_buf[k++] = c;
-		}
-		else {
-			if (k > 0){
-				temp_buf[k] = '\0';
-				arr[j++] = atoi(temp_buf);
-				k = 0;
-			}
-		}
-	} 
-	if (k > 0){
-		temp_buf[k] = '\0';
-		arr[j++] = atoi(temp_buf);
-	}	
+	int *arr = malloc(arr_size * sizeof(int));;
+    char *token = strtok(input, " ");
+    while (token != NULL){
+    	arr[j++] = atoi(token);
+    	token = strtok(NULL, " ");
+    }
 	
 	arr_size = j;
 	int *temp_arr = realloc(arr, arr_size * sizeof(int));
-	//проверка
+	if (temp_arr == NULL){
+		perror("allocation memory error");
+		return 1;
+	}
 	arr = temp_arr;
 	
 	parallel_divide(thread_num, &arr, arr_size);
