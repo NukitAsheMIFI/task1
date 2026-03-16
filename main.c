@@ -40,21 +40,26 @@ int main(int argc, char **argv){
 	int j = 0;
 	size_t arr_size = len;
 	int *arr = malloc(arr_size * sizeof(int));
-    char *token = strtok(input, " ");
+    char *token = strtok(input, " \n\0");
     while (token != NULL){
     	arr[j++] = atoi(token);
     	token = strtok(NULL, " ");
     }
 	free(input);
 	arr_size = j;
+	if (arr_size == 0){
+		printf("Чисел не обнаружено\n");
+		return 0;
+	}
 	int *temp_arr = realloc(arr, arr_size * sizeof(int));
 	if (temp_arr == NULL){
 		perror("memory allocation error");
+		free(arr);
 		return 1;
 	}
 	arr = temp_arr;
 	
-	if (parallel_divide(thread_num, &arr, arr_size) != 0) {
+	if (parallel_divide(thread_num, arr, arr_size) != 0) {
 		free(arr);
 		return 0;	
 	}
