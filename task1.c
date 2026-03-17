@@ -1,10 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <ctype.h>
 #include "task1.h"
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+bool is_integer(char *str){
+	int i = 0;
+	if (str[0] == '+' || str[0] == '-'){
+		i = 1;
+		if (str[i] == '\0'){ //без этого оператора функция с +/- без числа вернет true
+			return false;
+		}
+	} 
+	for (; str[i] != '\0'; i++){
+		if (!isdigit(str[i])) {
+			return false;
+		}
+	}
+	return true;
+}
 
 int parallel_divide(int thread_num, int *arr, int arr_size){
 	if (thread_num > arr_size){

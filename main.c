@@ -14,7 +14,10 @@ int main(int argc, char **argv){
 	while ((opt = getopt(argc, argv, opts)) != -1){
 		thread_num = atoi(optarg); // считывание количества потоков из командной строки
 	}	
-
+	if (thread_num < 1){
+		printf("количество потоков должно быть больше 0\n");
+		return 0;
+	}
 	//считываем введенные в командную строку числа
 	size_t len = 0;
 	char *input = malloc(1 * sizeof(char));
@@ -42,8 +45,15 @@ int main(int argc, char **argv){
 	int *arr = malloc(arr_size * sizeof(int));
     char *token = strtok(input, " \n\0");
     while (token != NULL){
+    	if (!is_integer(token)){
+    		printf("обнаружено не число. выход\n");
+    		free(arr);
+ 	   		free(input);
+    		return 0;
+    	}
     	arr[j++] = atoi(token);
-    	token = strtok(NULL, " ");
+    	token = strtok(NULL, " \n\0");
+    
     }
 	free(input);
 	arr_size = j;
