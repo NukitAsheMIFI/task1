@@ -8,11 +8,13 @@
 #define BUF_SIZE 256
 
 int main(int argc, char **argv){
-	char *opts = "t:";
-	int opt;
 	int thread_num = 1; // в случае отсутствия парметра будет один поток
-	while ((opt = getopt(argc, argv, opts)) != -1){
-		thread_num = atoi(optarg); // считывание количества потоков из командной строки
+	if (argc > 1){
+		if (!is_integer(argv[1])){
+			printf("невозможное количество потоков\n");
+			return 1;
+		}
+		thread_num = atoi(argv[1]);
 	}	
 	if (thread_num < 1){
 		printf("количество потоков должно быть больше 0\n");
@@ -46,7 +48,7 @@ int main(int argc, char **argv){
     char *token = strtok(input, " \n\0");
     while (token != NULL){
     	if (!is_integer(token)){
-    		printf("обнаружено не число. выход\n");
+    		printf("обнаружено не целое число. выход\n");
     		free(arr);
  	   		free(input);
     		return 0;
