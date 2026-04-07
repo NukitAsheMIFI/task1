@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pthread -O2
-TARGET = main
+TARGET = task1
 SRCS = main.c task1.c 
 OBJS = $(SRCS:.c=.o)
 $(TARGET): $(OBJS)
